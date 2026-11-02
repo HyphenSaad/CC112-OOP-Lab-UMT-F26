@@ -51,9 +51,9 @@ Domain:      Example.COM
 
 ## Chirp methods used
 
-- [`Check.isEmail(String)`](https://hyphensaad.github.io/chirp/chirp/text/Check.html#isEmail(java.lang.String))
-- [`Check.notNull(Object)`](https://hyphensaad.github.io/chirp/chirp/text/Check.html#notNull(java.lang.Object))
-- [`Chirp.readString(prompt)`](https://hyphensaad.github.io/chirp/chirp/Chirp.html#readString())
+- [`Check.isEmail(String)`](https://hyphensaad.github.io/chirp/javadoc/chirp/text/Check.html#isEmail(java.lang.String))
+- [`Check.notNull(Object)`](https://hyphensaad.github.io/chirp/javadoc/chirp/text/Check.html#notNull(java.lang.Object))
+- [`Chirp.readString(prompt)`](https://hyphensaad.github.io/chirp/javadoc/chirp/Chirp.html#readString())
 
 ## Tests to pass
 

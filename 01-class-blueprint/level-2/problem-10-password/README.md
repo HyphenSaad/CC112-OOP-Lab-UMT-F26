@@ -54,10 +54,10 @@ Masked:    ***
 
 ## Chirp methods used
 
-- [`Check.containsDigit(String)`](https://hyphensaad.github.io/chirp/chirp/text/Check.html#containsDigit(java.lang.String))
-- [`Check.minLength(String, int)`](https://hyphensaad.github.io/chirp/chirp/text/Check.html#minLength(java.lang.String,int))
-- [`Text.mask(String, int)`](https://hyphensaad.github.io/chirp/chirp/text/Text.html#mask(java.lang.String,int))
-- [`Chirp.readString(prompt).read()`](https://hyphensaad.github.io/chirp/chirp/Chirp.html#readString())
+- [`Check.containsDigit(String)`](https://hyphensaad.github.io/chirp/javadoc/chirp/text/Check.html#containsDigit(java.lang.String))
+- [`Check.minLength(String, int)`](https://hyphensaad.github.io/chirp/javadoc/chirp/text/Check.html#minLength(java.lang.String,int))
+- [`Text.mask(String, int)`](https://hyphensaad.github.io/chirp/javadoc/chirp/text/Text.html#mask(java.lang.String,int))
+- [`Chirp.readString(prompt).read()`](https://hyphensaad.github.io/chirp/javadoc/chirp/Chirp.html#readString())
 
 ## Tests to pass
 

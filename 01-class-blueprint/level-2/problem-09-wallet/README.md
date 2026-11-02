@@ -53,8 +53,8 @@ canAfford(100)? true
 
 ## Chirp methods used
 
-- [`Chirp.readDouble(prompt).min(...).read()`](https://hyphensaad.github.io/chirp/chirp/Chirp.html#readDouble())
-- [`Chirp.rupees(amount)`](https://hyphensaad.github.io/chirp/chirp/Chirp.html#rupees(double))
+- [`Chirp.readDouble(prompt).min(...).read()`](https://hyphensaad.github.io/chirp/javadoc/chirp/Chirp.html#readDouble())
+- [`Chirp.rupees(amount)`](https://hyphensaad.github.io/chirp/javadoc/chirp/Chirp.html#rupees(double))
 
 ## Tests to pass
 

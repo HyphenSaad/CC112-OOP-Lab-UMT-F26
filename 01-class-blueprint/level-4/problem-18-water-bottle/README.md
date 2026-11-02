@@ -63,9 +63,9 @@ isEmpty? true
 
 ## Chirp methods used
 
-- [`Numbers.clamp(int, int, int)`](https://hyphensaad.github.io/chirp/chirp/number/Numbers.html#clamp(int,int,int))
-- [`Check.inRange(int, int, int)`](https://hyphensaad.github.io/chirp/chirp/text/Check.html#inRange(int,int,int))
-- [`Chirp.readInt(prompt, min, max)`](https://hyphensaad.github.io/chirp/chirp/Chirp.html#readInt(java.lang.String,int,int))
+- [`Numbers.clamp(int, int, int)`](https://hyphensaad.github.io/chirp/javadoc/chirp/number/Numbers.html#clamp(int,int,int))
+- [`Check.inRange(int, int, int)`](https://hyphensaad.github.io/chirp/javadoc/chirp/text/Check.html#inRange(int,int,int))
+- [`Chirp.readInt(prompt, min, max)`](https://hyphensaad.github.io/chirp/javadoc/chirp/Chirp.html#readInt(java.lang.String,int,int))
 
 ## Tests to pass
 

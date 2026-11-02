@@ -60,15 +60,15 @@ Valid: true
 
 ## Chirp methods used
 
-- [`Check.isName(String)`](https://hyphensaad.github.io/chirp/chirp/text/Check.html#isName(java.lang.String))
-- [`Check.inRange(int, int, int)`](https://hyphensaad.github.io/chirp/chirp/text/Check.html#inRange(int,int,int))
-- [`Check.inRange(double, double, double)`](https://hyphensaad.github.io/chirp/chirp/text/Check.html#inRange(double,double,double))
-- [`Chirp.readString(prompt)`](https://hyphensaad.github.io/chirp/chirp/Chirp.html#readString())
-- [`Chirp.readInt(prompt, min, max)`](https://hyphensaad.github.io/chirp/chirp/Chirp.html#readInt(java.lang.String,int,int))
-- [`Chirp.readDouble(prompt, min, max)`](https://hyphensaad.github.io/chirp/chirp/Chirp.html#readDouble(java.lang.String,double,double))
-- [`Session.isComplete()`](https://hyphensaad.github.io/chirp/chirp/session/Session.html#isComplete())
-- [`Session.missingFields()`](https://hyphensaad.github.io/chirp/chirp/session/Session.html#missingFields())
-- [`Console.watermark()`](https://hyphensaad.github.io/chirp/chirp/console/Console.html#watermark())
+- [`Check.isName(String)`](https://hyphensaad.github.io/chirp/javadoc/chirp/text/Check.html#isName(java.lang.String))
+- [`Check.inRange(int, int, int)`](https://hyphensaad.github.io/chirp/javadoc/chirp/text/Check.html#inRange(int,int,int))
+- [`Check.inRange(double, double, double)`](https://hyphensaad.github.io/chirp/javadoc/chirp/text/Check.html#inRange(double,double,double))
+- [`Chirp.readString(prompt)`](https://hyphensaad.github.io/chirp/javadoc/chirp/Chirp.html#readString())
+- [`Chirp.readInt(prompt, min, max)`](https://hyphensaad.github.io/chirp/javadoc/chirp/Chirp.html#readInt(java.lang.String,int,int))
+- [`Chirp.readDouble(prompt, min, max)`](https://hyphensaad.github.io/chirp/javadoc/chirp/Chirp.html#readDouble(java.lang.String,double,double))
+- [`Session.isComplete()`](https://hyphensaad.github.io/chirp/javadoc/chirp/session/Session.html#isComplete())
+- [`Session.missingFields()`](https://hyphensaad.github.io/chirp/javadoc/chirp/session/Session.html#missingFields())
+- [`Console.watermark()`](https://hyphensaad.github.io/chirp/javadoc/chirp/console/Console.html#watermark())
 
 ## Tests to pass
 

@@ -62,10 +62,10 @@ Total:   Rs.2,300.00
 
 ## Chirp methods used
 
-- [`Check.inRange(double, double, double)`](https://hyphensaad.github.io/chirp/chirp/text/Check.html#inRange(double,double,double))
-- [`Chirp.readDouble(prompt, min, max)`](https://hyphensaad.github.io/chirp/chirp/Chirp.html#readDouble(java.lang.String,double,double))
-- [`Chirp.rupees(amount)`](https://hyphensaad.github.io/chirp/chirp/Chirp.html#rupees(double))
-- [`Chirp.percent(value, places)`](https://hyphensaad.github.io/chirp/chirp/Chirp.html#percent(double,int))
+- [`Check.inRange(double, double, double)`](https://hyphensaad.github.io/chirp/javadoc/chirp/text/Check.html#inRange(double,double,double))
+- [`Chirp.readDouble(prompt, min, max)`](https://hyphensaad.github.io/chirp/javadoc/chirp/Chirp.html#readDouble(java.lang.String,double,double))
+- [`Chirp.rupees(amount)`](https://hyphensaad.github.io/chirp/javadoc/chirp/Chirp.html#rupees(double))
+- [`Chirp.percent(value, places)`](https://hyphensaad.github.io/chirp/javadoc/chirp/Chirp.html#percent(double,int))
 
 ## Tests to pass
 

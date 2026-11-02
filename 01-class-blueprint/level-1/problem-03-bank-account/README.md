@@ -50,10 +50,10 @@ Withdraw -50  -> false, balance: Rs.600.00
 
 ## Chirp methods used
 
-- [`Chirp.readString(prompt).notBlank().read()`](https://hyphensaad.github.io/chirp/chirp/Chirp.html#readString())
-- [`Chirp.readDouble(prompt).min(...).read()`](https://hyphensaad.github.io/chirp/chirp/Chirp.html#readDouble())
-- [`Chirp.rupees(amount)`](https://hyphensaad.github.io/chirp/chirp/Chirp.html#rupees(double))
-- [`Check.notBlank(String)`](https://hyphensaad.github.io/chirp/chirp/text/Check.html#notBlank(java.lang.String))
+- [`Chirp.readString(prompt).notBlank().read()`](https://hyphensaad.github.io/chirp/javadoc/chirp/Chirp.html#readString())
+- [`Chirp.readDouble(prompt).min(...).read()`](https://hyphensaad.github.io/chirp/javadoc/chirp/Chirp.html#readDouble())
+- [`Chirp.rupees(amount)`](https://hyphensaad.github.io/chirp/javadoc/chirp/Chirp.html#rupees(double))
+- [`Check.notBlank(String)`](https://hyphensaad.github.io/chirp/javadoc/chirp/text/Check.html#notBlank(java.lang.String))
 
 ## Tests to pass
 

@@ -58,12 +58,12 @@ deposit 100     -> silently rejected (locked)
 
 ## Chirp methods used
 
-- [`Check.isDigits(String)`](https://hyphensaad.github.io/chirp/chirp/text/Check.html#isDigits(java.lang.String))
-- [`Check.hasLength(String, int)`](https://hyphensaad.github.io/chirp/chirp/text/Check.html#hasLength(java.lang.String,int))
-- [`Check.inRange(double, double, double)`](https://hyphensaad.github.io/chirp/chirp/text/Check.html#inRange(double,double,double))
-- [`Chirp.readString(prompt)`](https://hyphensaad.github.io/chirp/chirp/Chirp.html#readString())
-- [`Chirp.readDouble(prompt, min, max)`](https://hyphensaad.github.io/chirp/chirp/Chirp.html#readDouble(java.lang.String,double,double))
-- [`Chirp.rupees(amount)`](https://hyphensaad.github.io/chirp/chirp/Chirp.html#rupees(double))
+- [`Check.isDigits(String)`](https://hyphensaad.github.io/chirp/javadoc/chirp/text/Check.html#isDigits(java.lang.String))
+- [`Check.hasLength(String, int)`](https://hyphensaad.github.io/chirp/javadoc/chirp/text/Check.html#hasLength(java.lang.String,int))
+- [`Check.inRange(double, double, double)`](https://hyphensaad.github.io/chirp/javadoc/chirp/text/Check.html#inRange(double,double,double))
+- [`Chirp.readString(prompt)`](https://hyphensaad.github.io/chirp/javadoc/chirp/Chirp.html#readString())
+- [`Chirp.readDouble(prompt, min, max)`](https://hyphensaad.github.io/chirp/javadoc/chirp/Chirp.html#readDouble(java.lang.String,double,double))
+- [`Chirp.rupees(amount)`](https://hyphensaad.github.io/chirp/javadoc/chirp/Chirp.html#rupees(double))
 
 ## Tests to pass
 

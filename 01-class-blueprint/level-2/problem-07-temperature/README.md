@@ -55,9 +55,9 @@ Boiling?    false
 
 ## Chirp methods used
 
-- [`Chirp.readDouble(prompt, min, max)`](https://hyphensaad.github.io/chirp/chirp/Chirp.html#readDouble(java.lang.String,double,double))
-- [`Chirp.decimal(value, 2)`](https://hyphensaad.github.io/chirp/chirp/Chirp.html#decimal(double,int))
-- [`Check.inRange(double, double, double)`](https://hyphensaad.github.io/chirp/chirp/text/Check.html#inRange(double,double,double))
+- [`Chirp.readDouble(prompt, min, max)`](https://hyphensaad.github.io/chirp/javadoc/chirp/Chirp.html#readDouble(java.lang.String,double,double))
+- [`Chirp.decimal(value, 2)`](https://hyphensaad.github.io/chirp/javadoc/chirp/Chirp.html#decimal(double,int))
+- [`Check.inRange(double, double, double)`](https://hyphensaad.github.io/chirp/javadoc/chirp/text/Check.html#inRange(double,double,double))
 
 ## Tests to pass
 

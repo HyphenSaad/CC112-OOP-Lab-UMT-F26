@@ -8,7 +8,7 @@ public class ShoppingCartItemDemo {
         start();
 
         Session.me()
-                .name("Ayesha Khan")
+                .name("John Baba")
                 .rollNumber("2024-CS-001")
                 .degree("BSCS")
                 .batch("2024")

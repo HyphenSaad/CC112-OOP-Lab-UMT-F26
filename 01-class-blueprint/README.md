@@ -30,7 +30,7 @@ Check.minLength(value, n)         // string
 
 Every setter uses one of these. If it returns `false`, the setter does nothing.
 
-Full reference: <https://hyphensaad.github.io/chirp/chirp/text/Check.html>
+Full reference: <https://hyphensaad.github.io/chirp/javadoc/chirp/text/Check.html>
 
 ### 2. `Chirp` readers — input that loops until valid
 
@@ -42,7 +42,7 @@ readString("Name").notBlank().read()
 
 The reader keeps asking until the user types something valid. In the demo, you never need to handle bad input — the reader does it for you.
 
-Full reference: <https://hyphensaad.github.io/chirp/chirp/Chirp.html>
+Full reference: <https://hyphensaad.github.io/chirp/javadoc/chirp/Chirp.html>
 
 ## Reference example — read this first
 
@@ -122,7 +122,7 @@ public class PointDemo {
         start();
 
         Session.me()
-                .name("Ayesha Khan")
+                .name("John Baba")
                 .rollNumber("2024-CS-001")
                 .degree("BSCS")
                 .batch("2024")

@@ -57,9 +57,9 @@ turnOff() -> on? false
 
 ## Chirp methods used
 
-- [`Console.println(...)`](https://hyphensaad.github.io/chirp/chirp/console/Console.html#println(java.lang.Object))
-- [`Console.watermark()`](https://hyphensaad.github.io/chirp/chirp/console/Console.html#watermark())
-- [`Session.me()`](https://hyphensaad.github.io/chirp/chirp/session/Session.html#me())
+- [`Console.println(...)`](https://hyphensaad.github.io/chirp/javadoc/chirp/console/Console.html#println(java.lang.Object))
+- [`Console.watermark()`](https://hyphensaad.github.io/chirp/javadoc/chirp/console/Console.html#watermark())
+- [`Session.me()`](https://hyphensaad.github.io/chirp/javadoc/chirp/session/Session.html#me())
 
 ## Tests to pass
 
