@@ -1,0 +1,17 @@
+# Runtime artefacts - never commit these
+.tools/
+dist/
+.logs/
+build/
+**/workspace/
+*.class
+*.zip
+
+# IDE noise
+.idea/
+*.iml
+.vscode/
+
+# OS noise
+.DS_Store
+Thumbs.db
