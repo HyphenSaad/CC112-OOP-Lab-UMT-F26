@@ -49,11 +49,11 @@ Defaults: `name = ""`, `age = 1`, `gpa = 0.0`. A fresh `Student` is **not** vali
 ## Sample interaction
 
 ```
-Name: Ayesha
+Name: John Baba
 Age: 20
 GPA: 3.75
 
-Hi, I'm Ayesha. I'm 20 years old with a GPA of 3.75.
+Hi, I'm John Baba. I'm 20 years old with a GPA of 3.75.
 Valid: true
 ⚠ setAge(200) was rejected — age is still 20
 ```
@@ -80,7 +80,7 @@ Valid: true
 - `negativeGpaRejected` — `setGpa(-1)` is silently rejected
 - `gpaAboveMaximumRejected` — `setGpa(5.0)` is silently rejected
 - `blankNameRejected` — `setName("   ")` is silently rejected
-- `nameWithDigitsRejected` — `setName("Ayesha123")` is silently rejected
+- `nameWithDigitsRejected` — `setName("John123")` is silently rejected
 - `freshStudentIsNotValid` — a fresh `Student` is not valid
 
 ## How to run

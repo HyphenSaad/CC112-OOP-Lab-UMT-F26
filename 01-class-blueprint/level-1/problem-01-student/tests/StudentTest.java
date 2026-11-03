@@ -9,7 +9,7 @@ class StudentTest {
     @BeforeEach
     void setUp() {
         student = new Student();
-        student.setName("Ayesha");
+        student.setName("John");
         student.setAge(20);
         student.setGpa(3.75);
     }
@@ -21,7 +21,7 @@ class StudentTest {
 
     @Test
     void attributesStoredCorrectly() {
-        assertEquals("Ayesha", student.getName());
+        assertEquals("John", student.getName());
         assertEquals(20, student.getAge());
         assertEquals(3.75, student.getGpa(), 0.001);
     }
@@ -29,7 +29,7 @@ class StudentTest {
     @Test
     void introduceContainsNameAndGpa() {
         String intro = student.introduce();
-        assertTrue(intro.contains("Ayesha"), "introduce() must mention the name");
+        assertTrue(intro.contains("John"), "introduce() must mention the name");
         assertTrue(intro.contains("3.75"), "introduce() must mention the GPA");
         assertTrue(intro.contains("20"), "introduce() must mention the age");
     }
@@ -61,13 +61,13 @@ class StudentTest {
     @Test
     void blankNameRejected() {
         student.setName("   ");
-        assertEquals("Ayesha", student.getName(), "blank name must be rejected");
+        assertEquals("John", student.getName(), "blank name must be rejected");
     }
 
     @Test
     void nameWithDigitsRejected() {
-        student.setName("Ayesha123");
-        assertEquals("Ayesha", student.getName(), "name with digits must be rejected");
+        student.setName("John123");
+        assertEquals("John", student.getName(), "name with digits must be rejected");
     }
 
     @Test
