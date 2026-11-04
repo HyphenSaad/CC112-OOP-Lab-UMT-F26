@@ -11,6 +11,19 @@
     back to the previous step, or `q` to quit. Every step re-renders as a
     fresh page.
 
+    Operations:
+      init             Create workspace/ from starter/ (must be run once per problem)
+      run              Compile and run your workspace/     (requires init)
+      test             Compile workspace/ + tests/          (requires init)
+      solution         Compile and run the reference solution (no init needed)
+      pack             Zip your workspace/ into dist/       (requires init at problem level)
+      run,test         Run your code, then ask before the test phase
+      solution,test    Run reference, then verify it passes the same tests
+
+    IMPORTANT: run and test require the workspace to be initialised first.
+    Call `init` once; the runner will refuse a second init and tell you
+    how to reset if you really want to start over.
+
     Prerequisites are handled automatically:
       - Java checked (auto-installs via winget/brew/apt if missing)
       - Chirp jar hash-checked against the latest release, refreshed if changed
@@ -18,6 +31,9 @@
 
     No .class files ever touch the project - every compile goes into a temp
     directory that is deleted before exit.
+
+.EXAMPLE
+    ./run.ps1 -l 1 -v 1 -p 1 -o init
 
 .EXAMPLE
     ./run.ps1 -l 1 -v 1 -p 1 -o "solution test"
@@ -614,19 +630,55 @@ function Test-Implementation {
 
 # ============================================================ workspace init
 
+# Creates workspace/ from starter/ if it does not exist.
+# REFUSES if workspace already exists - prevents accidental overwriting of
+# student work. If a student genuinely wants to start over, they delete the
+# folder manually and re-run init.
 function Init-Workspace {
     param($ProblemDir)
     $workspace = Join-Path $ProblemDir "workspace"
     $starter   = Join-Path $ProblemDir "starter"
 
-    if (Test-Path $workspace) { return $workspace }
+    if (Test-Path $workspace) {
+        Abort @"
+Workspace already exists at:
+  $workspace
+
+  This problem has already been initialised. The workspace is safe -
+  it was not touched.
+
+  To work on it: run 'run' or 'test'.
+  To reset it (destroys your work): delete the workspace folder and re-run 'init'.
+"@
+    }
     if (-not (Test-Path $starter)) {
-        Abort "Neither workspace/ nor starter/ exists in $ProblemDir"
+        Abort "No starter/ folder in $ProblemDir - cannot initialise."
     }
 
-    C-Info "First run - copying starter/ to workspace/"
+    C-Info "Creating workspace from starter..."
     Copy-Item -Path $starter -Destination $workspace -Recurse -Force
-    C-Success "Workspace ready: $workspace"
+    C-Success "Workspace created: $workspace"
+    C-Dim "  Edit the .java files, then run 'run' or 'test'."
+    return $workspace
+}
+
+# Ensures the workspace exists; aborts with a clear "run init first" if not.
+function Assert-WorkspaceExists {
+    param($ProblemDir)
+    $workspace = Join-Path $ProblemDir "workspace"
+    if (-not (Test-Path $workspace)) {
+        Abort @"
+Workspace not initialised.
+
+  Run this first:
+    ./run.ps1 -l $script:Lab -v $script:Level -p $script:Problem -o init
+
+  Or interactively pick 'init' at the operation step.
+
+  The workspace is where you write your code - it must exist before
+  'run' or 'test' can do anything.
+"@
+    }
     return $workspace
 }
 
@@ -677,8 +729,14 @@ function Pack-Operation {
         $pd = Get-ProblemDir $Lab $Level $Problem
         $ws = Join-Path $pd "workspace"
         if (-not (Test-Path $ws)) {
-            C-Warn "No workspace at $ws - nothing to pack."
-            return
+            Abort @"
+Workspace not initialised for lab $Lab / level $Level / problem $Problem.
+
+  Run 'init' first:
+    ./run.ps1 -l $Lab -v $Level -p $Problem -o init
+
+  Nothing to pack until you have a workspace.
+"@
         }
         [void]$targets.Add([PSCustomObject]@{
             Relative = "lab$Lab-level$Level-problem$Problem/workspace"
@@ -697,7 +755,7 @@ function Pack-Operation {
                 })
             }
         }
-        if ($targets.Count -eq 0) { C-Warn "No workspaces found in level $Level"; return }
+        if ($targets.Count -eq 0) { C-Warn "No workspaces found in level $Level - run 'init' on at least one problem first."; return }
         Pack-Workspace $targets "Lab $Lab / Level $Level" "lab$Lab-level$Level"
     }
     elseif ($Lab -gt 0) {
@@ -713,7 +771,7 @@ function Pack-Operation {
                 }
             }
         }
-        if ($targets.Count -eq 0) { C-Warn "No workspaces found in lab $Lab"; return }
+        if ($targets.Count -eq 0) { C-Warn "No workspaces found in lab $Lab - run 'init' on at least one problem first."; return }
         Pack-Workspace $targets "Lab $Lab" "lab$Lab"
     }
     else {
@@ -788,19 +846,17 @@ function Show-ContextPanel {
         $unicode = ($cp -eq 65001 -or $cp -eq 1200)
     } catch { $unicode = $false }
 
-    # Border characters, with ASCII fallback
-    $tl  = if ($unicode) { [char]0x256D } else { '+' }  # ╭
-    $tr  = if ($unicode) { [char]0x256E } else { '+' }  # ╮
-    $bl  = if ($unicode) { [char]0x2570 } else { '+' }  # ╰
-    $br  = if ($unicode) { [char]0x256F } else { '+' }  # ╯
-    $h   = if ($unicode) { [char]0x2500 } else { '-' }  # ─
-    $v   = if ($unicode) { [char]0x2502 } else { '|' }  # │
-    $tm  = if ($unicode) { [char]0x251C } else { '+' }  # ├
-    $bm  = if ($unicode) { [char]0x2524 } else { '+' }  # ┤
-    $mid = if ($unicode) { [char]0x00B7 } else { '*' }  # ·
-    $sep = if ($unicode) { [char]0x203A } else { '>' }  # ›
+    $tl  = if ($unicode) { [char]0x256D } else { '+' }
+    $tr  = if ($unicode) { [char]0x256E } else { '+' }
+    $bl  = if ($unicode) { [char]0x2570 } else { '+' }
+    $br  = if ($unicode) { [char]0x256F } else { '+' }
+    $h   = if ($unicode) { [char]0x2500 } else { '-' }
+    $v   = if ($unicode) { [char]0x2502 } else { '|' }
+    $tm  = if ($unicode) { [char]0x251C } else { '+' }
+    $bm  = if ($unicode) { [char]0x2524 } else { '+' }
+    $mid = if ($unicode) { [char]0x00B7 } else { '*' }
+    $sep = if ($unicode) { [char]0x203A } else { '>' }
 
-    # --- Summary content ---
     $javaMajor = $script:JavaMajor
     $labCount  = $script:LabCount
     $prCount   = $script:ProblemCount
@@ -810,7 +866,6 @@ function Show-ContextPanel {
     $prWord  = "problem" + $(if ($prCount -ne 1) { "s" } else { "" })
     $summaryText = "  Java $javaMajor  $mid  $labCount $labWord  $mid  $prCount $prWord"
 
-    # --- Breadcrumb content (only if user has made choices) ---
     $items = @()
     if ($script:Lab -ne 0)     { $items += @{ Text = "Lab $($script:Lab)";         IsOp = $false } }
     if ($script:Level -ne 0)   { $items += @{ Text = "Level $($script:Level)";     IsOp = $false } }
@@ -828,12 +883,10 @@ function Show-ContextPanel {
         }
     }
 
-    # --- Frame characters ---
     $top     = "  $tl" + ("$h" * $w) + "$tr"
     $bot     = "  $bl" + ("$h" * $w) + "$br"
     $divider = "  $tm" + ("$h" * $w) + "$bm"
 
-    # --- Plain (NoColor) mode ---
     if ($NoColor) {
         Write-Host ""
         Write-Host $top
@@ -848,11 +901,9 @@ function Show-ContextPanel {
         return
     }
 
-    # --- Colored mode ---
     Write-Host ""
     Write-Host $top -ForegroundColor DarkGray
 
-    # Summary row
     $pad1 = [Math]::Max(0, $w - $summaryText.Length)
     Write-Host "  $v" -ForegroundColor DarkGray -NoNewline
     Write-Host "  Java $javaMajor" -ForegroundColor Green -NoNewline
@@ -863,7 +914,6 @@ function Show-ContextPanel {
     Write-Host (" " * $pad1) -NoNewline
     Write-Host "$v" -ForegroundColor DarkGray
 
-    # Breadcrumb row (only when non-empty)
     if ($hasBreadcrumb) {
         Write-Host $divider -ForegroundColor DarkGray
         $pad2 = [Math]::Max(0, $w - $breadcrumbText.Length)
@@ -901,9 +951,6 @@ function Interactive-Resolve {
         $isInitialRender = $isFirstLoop
         $isFirstLoop = $false
 
-        # On the first render, the banner and summary were already printed by
-        # main. On subsequent renders (back/forward), clear and reprint so
-        # every step looks like a fresh page.
         if (-not $isInitialRender) {
             if (-not $NoClear) { try { Clear-Host } catch {} }
             Show-Banner -JavaReq $RequiredJava -ChirpVersion $ChirpVersion
@@ -933,7 +980,7 @@ function Interactive-Resolve {
             }
 
             $choice = Read-MenuChoice "Lab [1-$($labs.Count)]" -Max $labs.Count
-            if ($choice -eq -1) { continue }  # never happens without -AllowBack
+            if ($choice -eq -1) { continue }
             $script:Lab = $labs[$choice - 1]
             $step++
             continue
@@ -954,7 +1001,6 @@ function Interactive-Resolve {
             }
             $choice = Read-MenuChoice "Level [1-$($levels.Count)]" -Max $levels.Count -AllowBack
             if ($choice -eq -1) {
-                # Back to step 1 - reset everything downstream
                 $script:Lab = 0
                 $script:Level = 0
                 $script:Problem = 0
@@ -980,10 +1026,6 @@ function Interactive-Resolve {
             C-Head "STEP 3 of 4 - PROBLEM - $levelTitle"
             Write-Host ""
 
-            # Problem numbering is global across the lab (problem-06-employee
-            # in Level 2, problem-11-... in Level 3, etc.). Extract the actual
-            # number from each folder name and show it in the menu so the
-            # choice, the breadcrumb and the -p flag all agree.
             $problemNumbers = @()
             for ($i = 0; $i -lt $probs.Count; $i++) {
                 $folderName = $probs[$i].Name
@@ -998,7 +1040,6 @@ function Interactive-Resolve {
 
             $choice = Read-MenuChoice "Problem" -Valid $problemNumbers -AllowBack
             if ($choice -eq -1) {
-                # Back to step 2 - reset everything below level
                 $script:Level = 0
                 $script:Problem = 0
                 $script:Operation = ""
@@ -1012,15 +1053,28 @@ function Interactive-Resolve {
 
         # ---------------------------------------------------- STEP 4: OPERATION
         if ($step -eq 4) {
+            $problemDir = Get-ProblemDir $script:Lab $script:Level $script:Problem
+            $hasWorkspace = Test-Path (Join-Path $problemDir "workspace")
+
             C-Head "STEP 4 of 4 - OPERATION"
             Write-Host ""
+            if (-not $hasWorkspace) {
+                if (-not $NoColor) {
+                    Write-Host "  Workspace not initialised yet - pick 'init' first." -ForegroundColor Yellow
+                } else {
+                    Write-Host "  Workspace not initialised yet - pick 'init' first."
+                }
+                Write-Host ""
+            }
+
             $opList = @(
-                @{ Key = "run";           Desc = "Compile & run your workspace" },
-                @{ Key = "test";          Desc = "Compile & run JUnit tests" },
-                @{ Key = "solution";      Desc = "Run the reference solution" },
-                @{ Key = "run,test";      Desc = "Run, then test (asks first)" },
-                @{ Key = "solution,test"; Desc = "Run reference, then test" },
-                @{ Key = "pack";          Desc = "Zip your workspace for submission" }
+                @{ Key = "init";           Desc = "Create workspace from starter (once)" },
+                @{ Key = "run";            Desc = "Compile & run your workspace" },
+                @{ Key = "test";           Desc = "Compile & run JUnit tests" },
+                @{ Key = "solution";       Desc = "Run the reference solution (no init)" },
+                @{ Key = "run,test";       Desc = "Run, then test (asks first)" },
+                @{ Key = "solution,test";  Desc = "Run reference, then test" },
+                @{ Key = "pack";           Desc = "Zip your workspace for submission" }
             )
             for ($i = 0; $i -lt $opList.Count; $i++) {
                 $op = $opList[$i]
@@ -1028,7 +1082,6 @@ function Interactive-Resolve {
             }
             $choice = Read-MenuChoice "Operation [1-$($opList.Count)]" -Max $opList.Count -AllowBack
             if ($choice -eq -1) {
-                # Back to step 3 - reset problem and operation
                 $script:Problem = 0
                 $script:Operation = ""
                 $step = 3
@@ -1117,15 +1170,39 @@ function Execute-Problem {
     $problemDir = Get-ProblemDir $Lab $Level $Problem
     $solution   = Join-Path $problemDir "solution"
     $tests      = Join-Path $problemDir "tests"
+    $workspace  = Join-Path $problemDir "workspace"
 
     C-Head "Lab $Lab / Level $Level / Problem $Problem"
 
+    $hasInit     = $Ops -contains "init"
     $hasRun      = $Ops -contains "run"
     $hasSolution = $Ops -contains "solution"
     $hasTest     = $Ops -contains "test"
 
+    # ---------------------------------------------------------- init (standalone)
+    # init is a one-shot setup operation. It cannot be combined with other
+    # operations because it changes the filesystem state that the other
+    # operations depend on; forcing two invocations keeps the flow linear
+    # and predictable.
+    if ($hasInit) {
+        if ($Ops.Count -gt 1) {
+            Abort "Cannot combine 'init' with other operations.`n  Run 'init' first, then run/test/solution/pack separately."
+        }
+        [void](Init-Workspace $problemDir)
+        return
+    }
+
+    # ------------------------------------------- operations needing a workspace
+    # run, test, and pack all operate on the student's workspace. They must
+    # not silently auto-initialise - the student must be told to run 'init'
+    # first, so they are always aware of when a workspace was created.
+    if ($hasRun -or $hasTest) {
+        [void](Assert-WorkspaceExists $problemDir)
+    }
+
+    # ---------------------------------------------------- run / solution (+ test)
     if ($hasRun -or $hasSolution) {
-        $sourceDir = if ($hasRun) { Init-Workspace $problemDir } else { $solution }
+        $sourceDir = if ($hasRun) { $workspace } else { $solution }
         $label     = if ($hasRun) { "your workspace" } else { "reference solution" }
         if (-not (Test-Path $sourceDir)) { Abort "Source directory missing: $sourceDir" }
         Run-Implementation $sourceDir $label
@@ -1137,9 +1214,9 @@ function Execute-Problem {
         return
     }
 
+    # ------------------------------------------------------------ test only
     if ($hasTest) {
-        $ws = Init-Workspace $problemDir
-        [void](Test-Implementation $ws $tests "your workspace")
+        [void](Test-Implementation $workspace $tests "your workspace")
         return
     }
 
@@ -1169,7 +1246,7 @@ if ($UpdateLib -and $Lab -eq 0 -and $Level -eq 0 -and $Problem -eq 0 -and [strin
     exit 0
 }
 
-# Cache environment facts once - used by Show-SummaryLine on every re-render
+# Cache environment facts once - used by Show-ContextPanel on every re-render
 $script:JavaMajor = Get-JavaMajor
 $script:LabCount = @(Get-AvailableLabs).Count
 $script:ProblemCount = 0
@@ -1178,8 +1255,7 @@ foreach ($l in @(Get-AvailableLabs)) {
         $script:ProblemCount += @(Get-AvailableProblems $l $lv).Count
     }
 }
-# Panel is shown by Interactive-Resolve on the interactive path; for the
-# fully-specified (non-interactive) path, show it once here before executing.
+
 $needsInteractive = ($Lab -eq 0 -or $Level -eq 0 -or $Problem -eq 0 -or [string]::IsNullOrWhiteSpace($Operation))
 if (-not $needsInteractive -and $script:JavaMajor -gt 0) { Show-ContextPanel }
 
@@ -1192,6 +1268,10 @@ if ($ops.Count -eq 0) { Abort "No operation specified." }
 
 if (($ops -contains "run") -and ($ops -contains "solution")) {
     Abort "Cannot combine 'run' with 'solution' - pick one."
+}
+
+if (($ops -contains "init") -and ($ops.Count -gt 1)) {
+    Abort "Cannot combine 'init' with other operations.`n  Run 'init' first, then run/test/solution/pack separately."
 }
 
 if ($ops -contains "pack") {
