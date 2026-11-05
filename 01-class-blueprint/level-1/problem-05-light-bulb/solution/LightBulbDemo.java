@@ -1,4 +1,3 @@
-import chirp.console.Console;
 import chirp.session.Session;
 import static chirp.Chirp.*;
 
@@ -8,29 +7,28 @@ public class LightBulbDemo {
         start();
 
         Session.me()
-                .name("John Baba")
-                .rollNumber("2024-CS-001")
+                .name("Your Name")
+                .rollNumber("2024-CS-XXX")
                 .degree("BSCS")
                 .batch("2024")
                 .section("A");
 
+        if (!Session.me().isComplete()) {
+            warn("Session incomplete. Missing: " + Session.me().missingFields());
+        }
+
         LightBulb bulb = new LightBulb();
-
-        Console.println("Initial: on? " + bulb.isOn());
-
+        println("Initial: on? " + bulb.isOn());
         bulb.turnOn();
-        Console.println("turnOn()  -> on? " + bulb.isOn());
-
+        println("turnOn()  -> on? " + bulb.isOn());
         bulb.toggle();
-        Console.println("toggle()  -> on? " + bulb.isOn());
-
+        println("toggle()  -> on? " + bulb.isOn());
         bulb.toggle();
-        Console.println("toggle()  -> on? " + bulb.isOn());
-
+        println("toggle()  -> on? " + bulb.isOn());
         bulb.turnOff();
-        Console.println("turnOff() -> on? " + bulb.isOn());
+        println("turnOff() -> on? " + bulb.isOn());
 
-        Console.println();
-        Console.watermark();
+        println();
+        watermark();
     }
 }

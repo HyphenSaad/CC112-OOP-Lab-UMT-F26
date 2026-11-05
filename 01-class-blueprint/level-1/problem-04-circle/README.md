@@ -29,7 +29,7 @@ classDiagram
 
 | Attribute | Type | Rule |
 |---|---|---|
-| radius | double | > 0 |
+| radius | double | `> 0` |
 
 Default: `radius = 1.0`.
 
@@ -39,6 +39,16 @@ Default: `radius = 1.0`.
 - `circumference()` = `2 * Math.PI * radius`
 - `diameter()` = `2 * radius`
 
+## Chirp methods used
+
+| Method | What it does |
+|---|---|
+| `readDouble(prompt, min, max)` | Read a decimal; loops until in range |
+| `println(value)` | Print a value followed by a newline |
+| `warn(message)` | Print a yellow warning line |
+| `decimal(value, places)` | Format a decimal to fixed places |
+| `Check.inRange(value, min, max)` | Return `true` if `value` is within `[min, max]` |
+
 ## Sample interaction
 
 ```
@@ -47,13 +57,8 @@ Radius: 5
 Diameter:      10.00
 Area:          78.54
 Circumference: 31.42
+⚠ setRadius(-3) was rejected — radius is still 5.00
 ```
-
-## Chirp methods used
-
-- [`Chirp.readDouble(prompt).min(...).read()`](https://hyphensaad.github.io/chirp/javadoc/chirp/Chirp.html#readDouble())
-- [`Chirp.decimal(value, 2)`](https://hyphensaad.github.io/chirp/javadoc/chirp/Chirp.html#decimal(double,int))
-- [`Check.inRange(double, double, double)`](https://hyphensaad.github.io/chirp/javadoc/chirp/text/Check.html#inRange(double,double,double))
 
 ## Tests to pass
 
@@ -67,4 +72,4 @@ Circumference: 31.42
 
 ## Files
 
-`starter/` · `solution/` · `tests/`
+`starter/` (Circle.java empty + demo guide) · `solution/` · `tests/`

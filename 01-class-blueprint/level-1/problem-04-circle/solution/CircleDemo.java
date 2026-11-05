@@ -1,4 +1,3 @@
-import chirp.console.Console;
 import chirp.session.Session;
 import static chirp.Chirp.*;
 
@@ -8,29 +7,33 @@ public class CircleDemo {
         start();
 
         Session.me()
-                .name("John Baba")
-                .rollNumber("2024-CS-001")
+                .name("Your Name")
+                .rollNumber("2024-CS-XXX")
                 .degree("BSCS")
                 .batch("2024")
                 .section("A");
+
+        if (!Session.me().isComplete()) {
+            warn("Session incomplete. Missing: " + Session.me().missingFields());
+        }
 
         double r = readDouble("Radius", 0.0001, Double.MAX_VALUE);
 
         Circle c = new Circle();
         c.setRadius(r);
 
-        Console.println();
-        Console.println("Diameter:      " + decimal(c.diameter(), 2));
-        Console.println("Area:          " + decimal(c.area(), 2));
-        Console.println("Circumference: " + decimal(c.circumference(), 2));
+        println();
+        println("Diameter:      " + decimal(c.diameter(), 2));
+        println("Area:          " + decimal(c.area(), 2));
+        println("Circumference: " + decimal(c.circumference(), 2));
 
         double before = c.getRadius();
         c.setRadius(-3);
         if (c.getRadius() == before) {
-            Console.warn("setRadius(-3) was rejected -- radius is still " + before);
+            warn("setRadius(-3) was rejected — radius is still " + decimal(before, 2));
         }
 
-        Console.println();
-        Console.watermark();
+        println();
+        watermark();
     }
 }

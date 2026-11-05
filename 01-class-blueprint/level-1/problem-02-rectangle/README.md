@@ -8,7 +8,7 @@
 
 ## Context
 
-A small geometry tool. A `Rectangle` stores length and width, and reports its area, perimeter, and whether it is a square.
+A small geometry tool. A `Rectangle` stores length and width and reports its area, perimeter, and whether it is a square.
 
 ## UML
 
@@ -32,8 +32,8 @@ classDiagram
 
 | Attribute | Type | Rule |
 |---|---|---|
-| length | double | > 0 |
-| width | double | > 0 |
+| length | double | `> 0` |
+| width | double | `> 0` |
 
 Defaults: `length = 1.0`, `width = 1.0`.
 
@@ -42,6 +42,15 @@ Defaults: `length = 1.0`, `width = 1.0`.
 - `area()` = `length * width`
 - `perimeter()` = `2 * (length + width)`
 - `isSquare()` = `length == width`
+
+## Chirp methods used
+
+| Method | What it does |
+|---|---|
+| `readDouble(prompt, min, max)` | Read a decimal; loops until in range |
+| `println(value)` | Print a value followed by a newline |
+| `warn(message)` | Print a yellow warning line |
+| `Check.inRange(value, min, max)` | Return `true` if `value` is within `[min, max]` |
 
 ## Sample interaction
 
@@ -52,24 +61,19 @@ Width: 5
 Area:      40.00
 Perimeter: 26.00
 Is square: false
+⚠ setLength(0) was rejected — length is still 8.00
 ```
-
-## Chirp methods used
-
-- [`Chirp.readDouble(prompt).min(...).read()`](https://hyphensaad.github.io/chirp/javadoc/chirp/Chirp.html#readDouble())
-- [`Chirp.decimal(value, 2)`](https://hyphensaad.github.io/chirp/javadoc/chirp/Chirp.html#decimal(double,int))
-- [`Check.inRange(double, double, double)`](https://hyphensaad.github.io/chirp/javadoc/chirp/text/Check.html#inRange(double,double,double))
 
 ## Tests to pass
 
 - `validRectangleReportsIsValid`
-- `areaIsCorrect` — 8×5 = 40
-- `perimeterIsCorrect` — 2×(8+5) = 26
+- `areaIsCorrect` — 8 × 5 = 40
+- `perimeterIsCorrect` — 2 × (8 + 5) = 26
 - `notASquareWhenLengthDiffersFromWidth`
-- `squareWhenLengthEqualsWidth` — 8×8 is a square
+- `squareWhenLengthEqualsWidth`
 - `zeroLengthRejected`
 - `negativeWidthRejected`
 
 ## Files
 
-`starter/` · `solution/` · `tests/`
+`starter/` (Rectangle.java empty + demo guide) · `solution/` · `tests/`

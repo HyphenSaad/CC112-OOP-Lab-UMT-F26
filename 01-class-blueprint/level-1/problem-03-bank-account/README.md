@@ -31,42 +31,49 @@ classDiagram
 | Attribute | Type | Rule |
 |---|---|---|
 | accountNumber | String | `Check.notBlank(value)` |
-| balance | double | >= 0 (start at 0, no setter) |
+| balance | double | `>= 0` (starts at 0, no setter) |
 
 ### Behaviour
 
-- `deposit(amount)` — if `amount > 0`, adds to balance. Invalid amounts are silently rejected.
-- `withdraw(amount)` — returns `true` and reduces balance when `amount > 0` and `amount <= balance`. Otherwise returns `false`.
+- `deposit(amount)` — if `amount > 0`, adds to balance. Invalid amounts silently rejected.
+- `withdraw(amount)` — returns `true` and reduces balance when `0 < amount <= balance`. Otherwise returns `false`.
+
+## Chirp methods used
+
+| Method | What it does |
+|---|---|
+| `readNonEmpty(prompt)` | Read a non-blank string; loops until valid |
+| `readDouble(prompt, min, max)` | Read a decimal; loops until in range |
+| `println(value)` | Print a value followed by a newline |
+| `warn(message)` | Print a yellow warning line |
+| `rupees(amount)` | Format a decimal as `Rs.1,234.56` |
+| `Check.notBlank(value)` | Return `true` if `value` is not null/empty/whitespace |
 
 ## Sample interaction
 
 ```
-Deposit 500   -> balance: Rs.500.00
-Deposit 300   -> balance: Rs.800.00
-Withdraw 200  -> true,  balance: Rs.600.00
-Withdraw 999  -> false, balance: Rs.600.00
-Withdraw -50  -> false, balance: Rs.600.00
+Account number: ACC-1001
+Deposit 1: 500
+Balance after deposit 1: Rs.500.00
+Deposit 2: 300
+Balance after deposit 2: Rs.800.00
+Withdraw 1: 200
+Withdraw 1: accepted — balance: Rs.600.00
+⚠ deposit(-100) was rejected — balance is still Rs.600.00
 ```
-
-## Chirp methods used
-
-- [`Chirp.readString(prompt).notBlank().read()`](https://hyphensaad.github.io/chirp/javadoc/chirp/Chirp.html#readString())
-- [`Chirp.readDouble(prompt).min(...).read()`](https://hyphensaad.github.io/chirp/javadoc/chirp/Chirp.html#readDouble())
-- [`Chirp.rupees(amount)`](https://hyphensaad.github.io/chirp/javadoc/chirp/Chirp.html#rupees(double))
-- [`Check.notBlank(String)`](https://hyphensaad.github.io/chirp/javadoc/chirp/text/Check.html#notBlank(java.lang.String))
 
 ## Tests to pass
 
 - `validAccountReportsIsValid`
 - `initialBalanceIsZero`
-- `depositIncreasesBalance` (500 → 800)
+- `depositIncreasesBalance`
 - `withdrawReducesBalanceAndReturnsTrue`
 - `overWithdrawReturnsFalseAndKeepsBalance`
 - `negativeDepositRejected`
 - `zeroWithdrawReturnsFalse`
 - `blankAccountNumberRejected`
-- `negativeBalanceRejectedByConstructor` (balance never goes below zero via operations)
+- `freshAccountWithoutNumberNotValid`
 
 ## Files
 
-`starter/` · `solution/` · `tests/`
+`starter/` (BankAccount.java empty + demo guide) · `solution/` · `tests/`

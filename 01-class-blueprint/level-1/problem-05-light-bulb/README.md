@@ -8,7 +8,7 @@
 
 ## Context
 
-A very small simulation. A bulb that can be on or off, toggled, and inspected. This is the smallest class you can build — but it teaches the same lessons.
+A very small simulation — a bulb that can be on, off, or toggled. This is the smallest class you can build, and it teaches the same lessons: consistent state, clear operations, and an `isValid()` method.
 
 ## UML
 
@@ -28,9 +28,9 @@ classDiagram
 
 | Attribute | Type | Rule |
 |---|---|---|
-| isOn | boolean | start `false` |
+| isOn | boolean | starts `false` |
 
-No range validation is needed — any boolean is valid. But `isValid()` still exists and always returns `true`. That is a deliberate choice: every class in this course exposes `isValid()` so callers have one uniform way to ask "is this object in a usable state?".
+No range validation is needed. `isValid()` still exists — it always returns `true` for this class. That's a deliberate contract: every class in this course exposes `isValid()` so callers have one uniform way to ask "is this object ready to use?"
 
 ### Behaviour
 
@@ -39,27 +39,23 @@ No range validation is needed — any boolean is valid. But `isValid()` still ex
 - `toggle()` flips `isOn`.
 - `isOn()` returns the current state.
 
+## Chirp methods used
+
+| Method | What it does |
+|---|---|
+| `println(value)` | Print a value followed by a newline |
+
+That's it — this problem deliberately uses the smallest possible toolkit so the focus stays on the class shape.
+
 ## Sample interaction
 
 ```
 Initial: on? false
-turnOn()  -> on? true
-toggle()  -> on? false
-toggle()  -> on? true
-turnOff() -> on? false
+turnOn()  → on? true
+toggle()  → on? false
+toggle()  → on? true
+turnOff() → on? false
 ```
-
-## Why this problem matters
-
-1. Not every class needs range checks.
-2. Every class still needs **consistent state** — a bulb is either on or off, never "half-on".
-3. `isValid()` can honestly return `true` for a class with no constraints — the contract is "always valid".
-
-## Chirp methods used
-
-- [`Console.println(...)`](https://hyphensaad.github.io/chirp/javadoc/chirp/console/Console.html#println(java.lang.Object))
-- [`Console.watermark()`](https://hyphensaad.github.io/chirp/javadoc/chirp/console/Console.html#watermark())
-- [`Session.me()`](https://hyphensaad.github.io/chirp/javadoc/chirp/session/Session.html#me())
 
 ## Tests to pass
 
@@ -73,4 +69,4 @@ turnOff() -> on? false
 
 ## Files
 
-`starter/` · `solution/` · `tests/`
+`starter/` (LightBulb.java empty + demo guide) · `solution/` · `tests/`
