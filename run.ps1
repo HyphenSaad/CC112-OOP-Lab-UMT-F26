@@ -1060,9 +1060,11 @@ function Interactive-Resolve {
             Write-Host ""
             if (-not $hasWorkspace) {
                 if (-not $NoColor) {
-                    Write-Host "  Workspace not initialised yet - pick 'init' first." -ForegroundColor Yellow
+                    Write-Host "  Workspace not initialised - 'init' required before run/test." -ForegroundColor Yellow
+                    Write-Host "  ('solution' and 'solution,test' work without it.)" -ForegroundColor DarkGray
                 } else {
-                    Write-Host "  Workspace not initialised yet - pick 'init' first."
+                    Write-Host "  Workspace not initialised - 'init' required before run/test."
+                    Write-Host "  ('solution' and 'solution,test' work without it.)"
                 }
                 Write-Host ""
             }
@@ -1193,10 +1195,14 @@ function Execute-Problem {
     }
 
     # ------------------------------------------- operations needing a workspace
-    # run, test, and pack all operate on the student's workspace. They must
-    # not silently auto-initialise - the student must be told to run 'init'
-    # first, so they are always aware of when a workspace was created.
-    if ($hasRun -or $hasTest) {
+    # Only operations that actually operate on the student's workspace
+    # require it to exist first:
+    #   - run              -> workspace
+    #   - run,test         -> workspace (run needs it, tests run against it)
+    #   - test (standalone) -> workspace
+    # solution and solution,test work on solution/ and need no workspace.
+    $needsWorkspace = $hasRun -or ($hasTest -and -not $hasSolution)
+    if ($needsWorkspace) {
         [void](Assert-WorkspaceExists $problemDir)
     }
 
