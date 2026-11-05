@@ -6,9 +6,7 @@ public class Student {
     private int age = 1;
     private double gpa = 0.0;
 
-    public String getName() {
-        return name;
-    }
+    public String getName() { return name; }
 
     public void setName(String value) {
         if (Check.isName(value)) {
@@ -16,9 +14,7 @@ public class Student {
         }
     }
 
-    public int getAge() {
-        return age;
-    }
+    public int getAge() { return age; }
 
     public void setAge(int value) {
         if (Check.inRange(value, 1, 120)) {
@@ -26,9 +22,7 @@ public class Student {
         }
     }
 
-    public double getGpa() {
-        return gpa;
-    }
+    public double getGpa() { return gpa; }
 
     public void setGpa(double value) {
         if (Check.inRange(value, 0.0, 4.0)) {
