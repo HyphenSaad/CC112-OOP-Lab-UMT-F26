@@ -12,7 +12,7 @@
     fresh page.
 
     Operations:
-      init             Create workspace/ from starter/ (must be run once per problem)
+      init             Create workspace/ from starter/ (once per problem)
       run              Compile and run your workspace/     (requires init)
       test             Compile workspace/ + tests/          (requires init)
       solution         Compile and run the reference solution (no init needed)
@@ -20,14 +20,15 @@
       run,test         Run your code, then ask before the test phase
       solution,test    Run reference, then verify it passes the same tests
 
-    IMPORTANT: run and test require the workspace to be initialised first.
-    Call `init` once; the runner will refuse a second init and tell you
-    how to reset if you really want to start over.
-
     Prerequisites are handled automatically:
       - Java checked (auto-installs via winget/brew/apt if missing)
+      - Git checked (auto-installs if missing; auto-update disabled if not)
       - Chirp jar hash-checked against the latest release, refreshed if changed
       - JUnit console launcher downloaded if absent
+
+    The repository is checked for updates on every run (throttled to once
+    per hour). Updates NEVER touch any workspace/ folder - your code is safe.
+    If you have uncommitted changes or local commits, updates are skipped.
 
     No .class files ever touch the project - every compile goes into a temp
     directory that is deleted before exit.
@@ -51,6 +52,7 @@ param(
     [Alias("o")][string]$Operation = "",
 
     [Alias("u")][switch]$UpdateLib,
+    [Alias("nu")][switch]$NoUpdate,
     [Alias("j")][int]$RequiredJava = 17,
 
     [Alias("y")][switch]$Yes,
@@ -68,11 +70,14 @@ $DistDir      = Join-Path $RootDir "dist"
 $ChirpJar     = Join-Path $ToolsDir "chirp-1.0.0.jar"
 $JUnitJar     = Join-Path $ToolsDir "junit-platform-console-standalone-1.10.0.jar"
 $MetaPath     = Join-Path $ToolsDir ".chirp-meta.json"
+$StampPath    = Join-Path $ToolsDir ".last-update-check"
+$FirstRunPath = Join-Path $ToolsDir ".first-run-done"
 $ChirpApiUrl  = "https://api.github.com/repos/HyphenSaad/chirp/releases/latest"
 $ChirpUrl     = "https://github.com/HyphenSaad/chirp/releases/download/v1.0.0/chirp-1.0.0.jar"
 $JUnitUrl     = "https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.10.0/junit-platform-console-standalone-1.10.0.jar"
 $ChirpVersion = "1.0.0"
 $MinJava      = $RequiredJava
+$UpdateTtlMin = 60
 
 # ============================================================ colored output
 function C-Info    { param($m) if (-not $NoColor) { Write-Host $m -ForegroundColor Cyan }     else { Write-Host $m } }
@@ -325,6 +330,229 @@ function Ensure-Java {
 
     Abort "Could not find or install Java $MinJava+. Verify with: java -version"
 }
+
+# ------------------------------------------------------------ git
+
+function Get-GitVersion {
+    try {
+        $r = Run-Process "git" @("--version") -Capture
+        if ($r.ExitCode -eq 0 -and $r.StdOut -match 'git version (\d+)\.(\d+)') {
+            return "$($matches[1]).$($matches[2])"
+        }
+        return $null
+    } catch { return $null }
+}
+
+# Best-effort install. Unlike Java, git is OPTIONAL - if install fails,
+# the script continues with auto-update disabled.
+function Ensure-Git {
+    if (Get-GitVersion) { return $true }
+
+    C-Warn "Git not found. Attempting install (best effort)..."
+
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        C-Info "Installing Git via winget..."
+        [void](Run-Process "winget" @(
+            "install","--id","Git.Git",
+            "--accept-source-agreements","--accept-package-agreements","--silent"
+        ))
+        if (Get-GitVersion) { C-Success "Git installed."; return $true }
+    }
+
+    if (Get-Command brew -ErrorAction SilentlyContinue) {
+        C-Info "Installing Git via brew..."
+        [void](Run-Process "brew" @("install","git"))
+        if (Get-GitVersion) { C-Success "Git installed."; return $true }
+    }
+
+    if (Get-Command apt-get -ErrorAction SilentlyContinue) {
+        C-Warn "Git install requires sudo. To enable auto-update, run:"
+        C-Warn "  sudo apt install git"
+        return $false
+    }
+    if (Get-Command dnf -ErrorAction SilentlyContinue) {
+        C-Warn "Git install requires sudo. To enable auto-update, run:"
+        C-Warn "  sudo dnf install git"
+        return $false
+    }
+
+    C-Warn "Could not install Git automatically - auto-update disabled."
+    C-Dim  "  Everything else works. To enable updates later, install from:"
+    C-Dim  "  https://git-scm.com/downloads"
+    return $false
+}
+
+# Safely pulls updates from the origin remote.
+#
+# Guarantees:
+#   - Never touches any path matching "(^|/)workspace(/|$)"
+#   - Never runs if there are uncommitted changes to tracked files
+#   - Never runs if HEAD has local commits ahead of origin (not fast-forwardable)
+#   - Throttled to once per $UpdateTtlMin minutes unless -Force
+#   - Respects -Skip (the -NoUpdate flag)
+function Update-FromRemote {
+    param(
+        [switch]$Force,
+        [switch]$Skip
+    )
+
+    if ($Skip) { return }
+
+    if (-not (Test-Path (Join-Path $RootDir ".git"))) {
+        if ($Force) { C-Dim "  Not a git checkout - auto-update unavailable." }
+        return
+    }
+
+    if (-not (Get-GitVersion)) {
+        if ($Force) { C-Dim "  Git not available - auto-update skipped." }
+        return
+    }
+
+    # Throttle
+    if (-not $Force -and (Test-Path $StampPath)) {
+        try {
+            $age = (Get-Date) - (Get-Item $StampPath).LastWriteTime
+            if ($age.TotalMinutes -lt $UpdateTtlMin) { return }
+        } catch { }
+    }
+
+    # Refuse if there are uncommitted changes to tracked files
+    $statusResult = Run-Process "git" @("-C", $RootDir, "status", "--porcelain", "--untracked-files=no") -Capture
+    if ($statusResult.StdOut -and $statusResult.StdOut.Trim() -ne "") {
+        if ($Force) {
+            C-Warn "  Auto-update skipped - uncommitted changes to tracked files."
+            C-Dim  "  Commit or stash them first, then re-run."
+        }
+        New-Item -ItemType File -Force -Path $StampPath | Out-Null
+        return
+    }
+
+    # Find remote branch
+    $remoteBranch = $null
+    foreach ($b in @("main", "master")) {
+        $probe = Run-Process "git" @("-C", $RootDir, "ls-remote", "--exit-code", "--heads", "origin", $b) -Capture
+        if ($probe.ExitCode -eq 0 -and $probe.StdOut.Trim() -ne "") {
+            $remoteBranch = $b
+            break
+        }
+    }
+    if (-not $remoteBranch) {
+        if ($Force) { C-Dim "  Could not reach origin - auto-update skipped." }
+        New-Item -ItemType File -Force -Path $StampPath | Out-Null
+        return
+    }
+    $remoteRef = "origin/$remoteBranch"
+
+    # Fetch
+    $fetchResult = Run-Process "git" @("-C", $RootDir, "fetch", "--quiet", "origin", $remoteBranch)
+    if ($fetchResult.ExitCode -ne 0) {
+        if ($Force) { C-Dim "  git fetch failed - auto-update skipped." }
+        New-Item -ItemType File -Force -Path $StampPath | Out-Null
+        return
+    }
+
+    # Refuse if HEAD has local commits not on origin (non fast-forward)
+    $ffCheck = Run-Process "git" @("-C", $RootDir, "merge-base", "--is-ancestor", "HEAD", $remoteRef)
+    if ($ffCheck.ExitCode -ne 0) {
+        if ($Force) {
+            C-Warn "  Auto-update skipped - local commits exist ahead of origin."
+            C-Dim  "  Resolve manually with 'git status' and 'git log'."
+        }
+        New-Item -ItemType File -Force -Path $StampPath | Out-Null
+        return
+    }
+
+    # Get diff
+    $diffResult = Run-Process "git" @("-C", $RootDir, "diff", "--name-only", "HEAD", $remoteRef) -Capture
+    if ($diffResult.ExitCode -ne 0) {
+        New-Item -ItemType File -Force -Path $StampPath | Out-Null
+        return
+    }
+
+    $allChanged = @($diffResult.StdOut -split "`r?`n" | Where-Object { $_ -and $_.Trim() })
+    $safeFiles = @($allChanged | Where-Object { $_ -notmatch '(^|/)workspace(/|$)' })
+    $blockedCount = $allChanged.Count - $safeFiles.Count
+
+    if ($safeFiles.Count -eq 0) {
+        if ($Force) {
+            if ($blockedCount -gt 0) {
+                C-Dim "  Only workspace files changed upstream ($blockedCount) - kept your copies."
+            } else {
+                C-Dim "  Already up to date."
+            }
+        }
+        New-Item -ItemType File -Force -Path $StampPath | Out-Null
+        return
+    }
+
+    # Show what will change
+    $plural = if ($safeFiles.Count -ne 1) { "s" } else { "" }
+    C-Info ""
+    C-Info "Repository updates available ($($safeFiles.Count) file$plural):"
+    $shown = 0
+    foreach ($f in $safeFiles) {
+        if ($shown -ge 12) { break }
+        $display = if ($f.Length -gt 70) { $f.Substring(0, 67) + "..." } else { $f }
+        C-Dim "  + $display"
+        $shown++
+    }
+    if ($safeFiles.Count -gt 12) {
+        C-Dim "  + ... and $($safeFiles.Count - 12) more"
+    }
+    if ($blockedCount -gt 0) {
+        $word = if ($blockedCount -ne 1) { "files" } else { "file" }
+        C-Warn "  ($blockedCount workspace $word preserved - never overwritten)"
+    }
+
+    # Confirm
+    if (-not $Force) {
+        Write-Host ""
+        C-Dim "  Apply now? Your workspace/ folders will not be touched."
+        $answer = (Read-Host "  Update? [Y/n]").Trim().ToLower()
+        if ($answer -eq "n" -or $answer -eq "no") {
+            C-Dim "  Update skipped."
+            New-Item -ItemType File -Force -Path $StampPath | Out-Null
+            return
+        }
+    }
+
+    # Apply each safe file
+    $applied = 0
+    $failed = 0
+    foreach ($f in $safeFiles) {
+        $r = Run-Process "git" @("-C", $RootDir, "checkout", $remoteRef, "--", $f)
+        if ($r.ExitCode -eq 0) {
+            $applied++
+        } else {
+            # Probably a delete upstream - remove locally
+            $fullPath = Join-Path $RootDir $f
+            if (Test-Path $fullPath) {
+                Remove-Item $fullPath -Force -ErrorAction SilentlyContinue
+                $applied++
+            } else {
+                $failed++
+            }
+        }
+    }
+
+    # Move branch pointer to remote (does NOT touch worktree)
+    $branchName = (Run-Process "git" @("-C", $RootDir, "rev-parse", "--abbrev-ref", "HEAD") -Capture).StdOut.Trim()
+    if ($branchName -and $branchName -ne "HEAD") {
+        [void](Run-Process "git" @("-C", $RootDir, "update-ref", "refs/heads/$branchName", $remoteRef))
+    } else {
+        [void](Run-Process "git" @("-C", $RootDir, "update-ref", "HEAD", $remoteRef))
+    }
+
+    if ($failed -gt 0) {
+        C-Warn "Updates applied with $failed failure(s) ($applied file(s) updated)."
+    } else {
+        C-Success "Updates applied ($applied file(s)). Workspace folders preserved."
+    }
+
+    New-Item -ItemType File -Force -Path $StampPath | Out-Null
+}
+
+# ------------------------------------------------------------ chirp library
 
 function Update-ChirpLib {
     param([switch]$Force)
@@ -781,14 +1009,6 @@ Workspace not initialised for lab $Lab / level $Level / problem $Problem.
 
 # ============================================================ interactive
 
-# Reads a number from the user.
-#
-# Two modes:
-#   -Max N       - accepts any integer in [1..N]         (contiguous range)
-#   -Valid array - accepts any integer present in array  (explicit set)
-#
-# With -AllowBack, "b" / "back" / ".." returns -1.
-# "q" / "quit" exits. Read-Host appends ": " so labels must not end with one.
 function Read-MenuChoice {
     param(
         [string]$Label,
@@ -832,11 +1052,6 @@ function Read-MenuChoice {
     }
 }
 
-# Prints a bordered "context panel" containing:
-#   - environment summary (Java version, lab/problem counts)
-#   - the breadcrumb trail of user choices, if any have been made
-# Uses the same 56-char inner width as the banner for visual alignment.
-# A horizontal divider separates summary (static) from breadcrumb (dynamic).
 function Show-ContextPanel {
     $w = 56
 
@@ -932,8 +1147,6 @@ function Show-ContextPanel {
 }
 
 function Interactive-Resolve {
-    # Determine which step to start at.
-    #   1=Lab 2=Level 3=Problem 4=Operation 5=Summary
     $step = 1
     if ($script:Lab -ne 0)     { $step = 2 }
     if ($script:Level -ne 0)   { $step = 3 }
@@ -943,10 +1156,6 @@ function Interactive-Resolve {
     $maxStep = if ($Yes) { 4 } else { 5 }
     $isFirstLoop = $true
 
-    # IMPORTANT: use if/elseif, NOT switch. In PowerShell, `continue` inside
-    # a `switch` only exits the switch - it does NOT skip $step++ at the
-    # bottom of the enclosing while. Using if/elseif, `continue` correctly
-    # skips $step++ and restarts the while with the new step value.
     while ($step -ge 1 -and $step -le $maxStep) {
         $isInitialRender = $isFirstLoop
         $isFirstLoop = $false
@@ -1161,7 +1370,6 @@ function Confirm-TestPhase {
     Write-Host ""
     C-Warn "About to run tests after '$After'."
     $answer = (Read-Host "Run tests now? [Y/n]").Trim().ToLower()
-    # Empty input (bare Enter) counts as yes - tests should always follow a run
     if ([string]::IsNullOrEmpty($answer)) { return $true }
     return ($answer -match '^(y|yes)$')
 }
@@ -1181,11 +1389,7 @@ function Execute-Problem {
     $hasSolution = $Ops -contains "solution"
     $hasTest     = $Ops -contains "test"
 
-    # ---------------------------------------------------------- init (standalone)
-    # init is a one-shot setup operation. It cannot be combined with other
-    # operations because it changes the filesystem state that the other
-    # operations depend on; forcing two invocations keeps the flow linear
-    # and predictable.
+    # init is standalone - cannot be combined with other operations
     if ($hasInit) {
         if ($Ops.Count -gt 1) {
             Abort "Cannot combine 'init' with other operations.`n  Run 'init' first, then run/test/solution/pack separately."
@@ -1194,19 +1398,14 @@ function Execute-Problem {
         return
     }
 
-    # ------------------------------------------- operations needing a workspace
     # Only operations that actually operate on the student's workspace
-    # require it to exist first:
-    #   - run              -> workspace
-    #   - run,test         -> workspace (run needs it, tests run against it)
-    #   - test (standalone) -> workspace
-    # solution and solution,test work on solution/ and need no workspace.
+    # require it to exist. solution / solution,test work on solution/ and
+    # need no workspace.
     $needsWorkspace = $hasRun -or ($hasTest -and -not $hasSolution)
     if ($needsWorkspace) {
         [void](Assert-WorkspaceExists $problemDir)
     }
 
-    # ---------------------------------------------------- run / solution (+ test)
     if ($hasRun -or $hasSolution) {
         $sourceDir = if ($hasRun) { $workspace } else { $solution }
         $label     = if ($hasRun) { "your workspace" } else { "reference solution" }
@@ -1220,7 +1419,6 @@ function Execute-Problem {
         return
     }
 
-    # ------------------------------------------------------------ test only
     if ($hasTest) {
         [void](Test-Implementation $workspace $tests "your workspace")
         return
@@ -1243,16 +1441,29 @@ if ($args.Count -gt 0) {
 # ============================================================ main
 
 Ensure-Java
-Update-ChirpLib -Force:$UpdateLib
 Ensure-Tools
+[void](Ensure-Git)
+Update-FromRemote -Force:$UpdateLib -Skip:$NoUpdate
+Update-ChirpLib -Force:$UpdateLib
 
-# -UpdateLib alone (no lab/level/problem/operation) -> refresh and exit
+# -u alone -> refresh everything, then exit
 if ($UpdateLib -and $Lab -eq 0 -and $Level -eq 0 -and $Problem -eq 0 -and [string]::IsNullOrWhiteSpace($Operation)) {
-    C-Success "Chirp library updated. Exiting."
+    C-Success "Updates complete. Exiting."
     exit 0
 }
 
-# Cache environment facts once - used by Show-ContextPanel on every re-render
+# First-run hint for non-git checkouts
+if (-not (Test-Path $FirstRunPath)) {
+    if (-not (Test-Path (Join-Path $RootDir ".git"))) {
+        Write-Host ""
+        C-Dim "  Note: this project was not cloned via git."
+        C-Dim "  Auto-update is disabled. Re-download manually, or clone:"
+        C-Dim "    git clone <repo-url>"
+    }
+    New-Item -ItemType File -Force -Path $FirstRunPath | Out-Null
+}
+
+# Cache environment facts once
 $script:JavaMajor = Get-JavaMajor
 $script:LabCount = @(Get-AvailableLabs).Count
 $script:ProblemCount = 0
